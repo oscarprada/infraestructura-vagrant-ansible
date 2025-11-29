@@ -1,5 +1,5 @@
 [web]
-proyecto ansible_host=192.168.50.10 ansible_user=vagrant ansible_ssh_private_key_file=../.vagrant/machines/proyecto/virtualbox/private_key
+proyecto ansible_host=192.168.50.10 ansible_user=vagrant ansible_ssh_private_key_file=/home/oscar_prada/.ssh/proyecto_key
 
 [monitor]
 monitor ansible_host=192.168.50.11 ansible_user=vagrant ansible_ssh_private_key_file=/home/oscar_prada/.ssh/monitor_key
