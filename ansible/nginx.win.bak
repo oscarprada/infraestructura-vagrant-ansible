@@ -1,0 +1,25 @@
+---
+- name: Configurar servidor web Nginx
+  hosts: web
+  become: yes
+
+  tasks:
+    - name: Actualizar repos
+      apt:
+        update_cache: yes
+
+    - name: Instalar Nginx
+      apt:
+        name: nginx
+        state: present
+
+    - name: Habilitar y arrancar servicio Nginx
+      service:
+        name: nginx
+        state: started
+        enabled: yes
+
+    - name: Crear página HTML personalizada
+      copy:
+        dest: /var/www/html/index.html
+        content: "<h1>Servidor Nginx configurado con Ansible</h1>"

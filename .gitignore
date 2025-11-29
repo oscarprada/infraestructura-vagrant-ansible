@@ -1,0 +1,15 @@
+# Ignorar máquinas virtuales de Vagrant
+.vagrant/
+vagrant/
+
+# Ignorar claves privadas y públicas
+*.key
+*.pem
+*_key
+*.pub
+clave_host
+clave_host.pub
+
+# Archivos temporales
+*.log
+*.tmp
