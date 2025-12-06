@@ -1,0 +1,41 @@
+---
+- name: Configurar Prometheus para monitorear proyecto, monitor y Nginx
+  hosts: monitor
+  become: yes
+
+  tasks:
+    - name: Hacer copia de seguridad del archivo original prometheus.yml (si existe)
+      ansible.builtin.copy:
+        src: /etc/prometheus/prometheus.yml
+        dest: /etc/prometheus/prometheus.yml.bak
+        remote_src: yes
+      ignore_errors: yes
+
+    - name: Configurar prometheus.yml con jobs para prometheus, node_exporter y nginx
+      ansible.builtin.copy:
+        dest: /etc/prometheus/prometheus.yml
+        content: |
+          global:
+            scrape_interval: 15s
+
+          scrape_configs:
+            - job_name: 'prometheus'
+              static_configs:
+                - targets: ['localhost:9090']
+
+            - job_name: 'node_exporter'
+              static_configs:
+                - targets:
+                    - '192.168.50.10:9100'  # VM proyecto
+                    - '192.168.50.11:9100'  # VM monitor
+
+            - job_name: 'nginx'
+              static_configs:
+                - targets:
+                    - 'localhost:9113'      # nginx-prometheus-exporter en monitor
+
+    - name: Recargar configuración de Prometheus
+      ansible.builtin.systemd:
+        name: prometheus
+        state: restarted
+        enabled: yes

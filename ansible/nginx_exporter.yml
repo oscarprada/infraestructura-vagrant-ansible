@@ -1,0 +1,50 @@
+---
+- name: Instalar nginx-prometheus-exporter en monitor
+  hosts: monitor
+  become: yes
+
+  vars:
+    nginx_exporter_version: "0.11.0"
+
+  tasks:
+    - name: Descargar nginx-prometheus-exporter
+      ansible.builtin.get_url:
+        url: "https://github.com/nginxinc/nginx-prometheus-exporter/releases/download/v{{ nginx_exporter_version }}/nginx-prometheus-exporter_{{ nginx_exporter_version }}_linux_amd64.tar.gz"
+        dest: /tmp/nginx-prometheus-exporter.tar.gz
+
+    - name: Extraer nginx-prometheus-exporter
+      ansible.builtin.unarchive:
+        src: /tmp/nginx-prometheus-exporter.tar.gz
+        dest: /usr/local/bin/
+        remote_src: yes
+
+    - name: Mover binario de nginx-prometheus-exporter
+      ansible.builtin.command:
+        cmd: mv /usr/local/bin/nginx-prometheus-exporter_{{ nginx_exporter_version }}_linux_amd64/nginx-prometheus-exporter /usr/local/bin/nginx-prometheus-exporter
+      args:
+        removes: /usr/local/bin/nginx-prometheus-exporter_{{ nginx_exporter_version }}_linux_amd64/nginx-prometheus-exporter
+
+    - name: Crear servicio systemd para nginx-prometheus-exporter
+      ansible.builtin.copy:
+        dest: /etc/systemd/system/nginx-prometheus-exporter.service
+        content: |
+          [Unit]
+          Description=Nginx Prometheus Exporter
+          After=network.target
+
+          [Service]
+          ExecStart=/usr/local/bin/nginx-prometheus-exporter \
+            -nginx.scrape-uri=http://192.168.50.10:8081/stub_status
+          Restart=always
+
+          [Install]
+          WantedBy=multi-user.target
+
+    - name: Recargar systemd
+      ansible.builtin.command: systemctl daemon-reload
+
+    - name: Iniciar y habilitar nginx-prometheus-exporter
+      ansible.builtin.systemd:
+        name: nginx-prometheus-exporter
+        enabled: yes
+        state: started
